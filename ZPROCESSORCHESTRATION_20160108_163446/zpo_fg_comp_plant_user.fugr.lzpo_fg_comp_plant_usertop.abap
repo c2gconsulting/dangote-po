@@ -1,0 +1,3 @@
+FUNCTION-POOL ZPO_FG_COMP_PLANT_USER.       "MESSAGE-ID ..
+
+* INCLUDE LZPO_FG_COMP_PLANT_USERD...        " Local class definition

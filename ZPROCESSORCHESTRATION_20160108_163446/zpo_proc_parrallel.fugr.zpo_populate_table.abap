@@ -1,0 +1,60 @@
+FUNCTION ZPO_POPULATE_TABLE.
+*"----------------------------------------------------------------------
+*"*"Local Interface:
+*"  IMPORTING
+*"     VALUE(DOCNUM) TYPE  INT4
+*"     VALUE(TEXT) TYPE  STRING
+*"  EXPORTING
+*"     VALUE(STATUS) TYPE  STRING
+*"  TABLES
+*"      ZZDOCS STRUCTURE  ZZDOCS
+*"----------------------------------------------------------------------
+
+* checking the processing of background fm in parrallel
+  DATA SDOCNUM TYPE STRING.
+* define data type for proxy
+* using service interface si_proxy_in_atc inported into sproxy (lcl_ref_proxy) as zii_si_proxy_in_atc
+* using cl_ref_fault as cx_ai_system_fault
+
+  DATA: LCL_REF_PROXY TYPE REF TO ZCO_SI_ATC_PROXY_OUTBOUND,
+        LCL_REF_FAULT TYPE REF TO CX_AI_SYSTEM_FAULT.
+  DATA: ATC_IN TYPE ZMT_PROXY_IN_ATC.
+
+*IMPLEMENT WIAT FOR PARRALLEL PROCESSING BENCHMARKING.
+*WAIT UP TO 10 SECONDS.
+  ZZDOCS-DOCNUM = DOCNUM.
+  ZZDOCS-TEXT = TEXT.
+  INSERT INTO ZZDOCS VALUES ZZDOCS.
+  IF SY-SUBRC = 0.
+    SDOCNUM = DOCNUM.
+    CONCATENATE 'CREATED DOCUMENT ' SDOCNUM INTO STATUS RESPECTING BLANKS.
+  ELSE.
+    STATUS = 'COULD NOT CREATED DOCUMENT'.
+  ENDIF.
+*MOVE DATA INTO WORK AREA OF ATC_IN.
+  MOVE DOCNUM TO ATC_IN-MT_PROXY_IN_ATC-DOCNUM.
+  MOVE TEXT TO ATC_IN-MT_PROXY_IN_ATC-ERROR.
+  MOVE 'PARENTORCHILD' TO ATC_IN-MT_PROXY_IN_ATC-DOC_TYPE.
+  IF STATUS IS NOT INITIAL.
+    MOVE STATUS TO ATC_IN-MT_PROXY_IN_ATC-TRANS_ID.
+  ELSE.
+    MOVE 'NOT CREATED' TO ATC_IN-MT_PROXY_IN_ATC-TRANS_ID.
+  ENDIF.
+*CREATE OBJECT REFERENCE
+  TRY.
+      CREATE OBJECT LCL_REF_PROXY.
+* SEND DATA TO PI
+*          TRY.
+          CALL METHOD LCL_REF_PROXY->SI_ATC_PROXY_OUTBOUND
+            EXPORTING
+              OUTPUT  = ATC_IN
+              .
+*          ENDTRY.
+          COMMIT WORK.
+          CATCH CX_AI_SYSTEM_FAULT INTO LCL_REF_FAULT.
+  ENDTRY.
+
+
+
+
+ENDFUNCTION.

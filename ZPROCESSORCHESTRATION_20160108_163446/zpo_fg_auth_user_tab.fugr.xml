@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v0.2-alpha">
+ <AREAT>Function group for auth user maintenance</AREAT>
+ <TY_RS38L_INCL_TT/>
+ <RSO_T_OBJNM>
+  <SOBJ_NAME>LZPO_FG_AUTH_USER_TABTOP</SOBJ_NAME>
+  <SOBJ_NAME>SAPLZPO_FG_AUTH_USER_TAB</SOBJ_NAME>
+ </RSO_T_OBJNM>
+</abapGit>
